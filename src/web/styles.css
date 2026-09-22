@@ -136,10 +136,18 @@ body {
 .health-low { color: var(--heart); }
 .health-high { color: var(--win); }
 
-.actions, .shop-actions, .result-actions {
+.actions, .result-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+.shop-actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
 }
 
 button {

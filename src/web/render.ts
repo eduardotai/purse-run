@@ -113,7 +113,14 @@ function stage(run: Run, playback: Playback): string {
     return `<section class="stage">${lines}<button type="button" data-action="skip">Skip</button></section>`
   }
   if (run.phase === "result") {
-    const end = run.lastLog.findLast((event) => event.type === "end")
+    let end: Run["lastLog"][number] | undefined
+    for (let index = run.lastLog.length - 1; index >= 0; index -= 1) {
+      const event = run.lastLog[index]
+      if (event?.type === "end") {
+        end = event
+        break
+      }
+    }
     const reason = run.endReason === "abandon" ? "You stepped away" : "Hearts ran out"
     return `<section class="stage">
       <p>${run.wins} wins</p>
