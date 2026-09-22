@@ -1,6 +1,5 @@
 import { fighterById, skillById } from "../rules/cards"
 import { combatAttack } from "../rules/fight"
-import { eventSentence } from "../rules/sentences"
 import { seatLimit } from "../rules/run"
 import type { Fighter, Offer, Run } from "../rules/types"
 import { fighterMark } from "./marks"
@@ -113,19 +112,10 @@ function stage(run: Run, playback: Playback): string {
     return `<section class="stage">${lines}<button type="button" data-action="skip">Skip</button></section>`
   }
   if (run.phase === "result") {
-    let end: Run["lastLog"][number] | undefined
-    for (let index = run.lastLog.length - 1; index >= 0; index -= 1) {
-      const event = run.lastLog[index]
-      if (event?.type === "end") {
-        end = event
-        break
-      }
-    }
     const reason = run.endReason === "abandon" ? "You stepped away" : "Hearts ran out"
     return `<section class="stage">
       <p>${run.wins} wins</p>
       <p>${reason}</p>
-      ${end ? `<p>${esc(eventSentence(end))}</p>` : ""}
       <div class="result-actions">
         <button type="button" data-action="new-run">New run</button>
         <button type="button" data-action="replay">Watch again</button>
