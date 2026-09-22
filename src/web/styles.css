@@ -1,0 +1,210 @@
+:root {
+  --paper: #F4EFE6;
+  --ink: #24312C;
+  --muted: #6A756F;
+  --card: #FFFCF8;
+  --line: #E6DDD0;
+  --player: #6E9C94;
+  --rival: #D09A74;
+  --gold: #C4A15A;
+  --heart: #D9897B;
+  --win: #7E9A62;
+  --common: #D9D1C5;
+  --uncommon: #8FB3A6;
+  --rare: #E0B15A;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, #fff9f1, transparent 46%),
+    radial-gradient(circle at top right, #e7f2ef, transparent 42%),
+    var(--paper);
+  font-family: Outfit, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background: transparent;
+}
+
+#app {
+  max-width: 1248px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+#title {
+  margin: 0;
+  font-family: Fraunces, serif;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.table {
+  display: grid;
+  gap: 12px;
+  position: relative;
+}
+
+.header,
+.board,
+.stage,
+.shop,
+.confirm {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(70, 55, 40, 0.08);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  min-height: 48px;
+}
+
+.hearts { display: flex; gap: 6px; }
+.heart {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.heart.full { background: var(--heart); }
+
+.purse {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.wins, .seed, .rival-gold, .caption, .skill-line {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.board, .shop {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.board[data-side="rival"] { box-shadow: inset 4px 0 0 var(--rival), 0 12px 28px rgba(70, 55, 40, 0.08); }
+.board[data-side="player"] { box-shadow: inset 4px 0 0 var(--player), 0 12px 28px rgba(70, 55, 40, 0.08); }
+
+.side-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  align-self: center;
+}
+
+.seat, .offer {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--card);
+  border: 1.5px solid var(--common);
+  border-radius: 18px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seat[data-seat="empty"],
+.offer[data-offer="empty"] {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.rarity-uncommon { border-color: var(--uncommon); }
+.rarity-rare { border-color: var(--rare); }
+
+.seat.is-active { outline: 2px solid var(--ink); }
+
+.seat svg, .offer svg { width: 48px; height: 48px; }
+
+.stats { display: flex; gap: 8px; font-weight: 600; }
+.health-low { color: var(--heart); }
+.health-high { color: var(--win); }
+
+.actions, .shop-actions, .result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+button:disabled { cursor: default; opacity: 0.5; }
+
+.stage {
+  min-height: 120px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.stage p { margin: 0; }
+
+.confirm {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 16px 20px;
+  z-index: 2;
+}
+
+.table[data-toast]::after {
+  content: attr(data-toast);
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(70, 55, 40, 0.08);
+  padding: 8px 12px;
+}
+
+@media (min-width: 1100px) {
+  body { overflow: hidden; }
+  .table {
+    height: calc(100vh - 32px);
+    grid-template-rows: 48px 148px minmax(160px, 1fr) 148px 168px;
+  }
+  .header { height: 48px; }
+  .board { height: 148px; }
+  .shop { height: 168px; }
+}
+
+@media (max-width: 1099px) {
+  .table { grid-template-columns: 1fr; }
+  .side-label { writing-mode: horizontal-tb; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
