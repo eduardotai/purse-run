@@ -56,7 +56,39 @@ function boot(root: Element): void {
   let playing = false
   let skipFlag = false
   let playback: Playback = null
+  let frameHeld = false
   let toastTimer = 0
+
+  function esc(value: string): string {
+    return value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+  }
+
+  function bind(scope: ParentNode): void {
+    for (const node of scope.querySelectorAll("[data-action]")) {
+      node.addEventListener("click", () => {
+        void onClick(node)
+      })
+    }
+  }
+
+  function patchFrame(): void {
+    if (!playback) return
+    const stage = root.querySelector(".stage")
+    if (!stage) return
+    const lines = playback.lines.map((line) => `<p>${esc(line)}</p>`).join("")
+    stage.innerHTML = `${lines}<button type="button" data-action="skip">Skip</button>`
+    bind(stage)
+    for (const seat of root.querySelectorAll(".seat.is-active")) seat.classList.remove("is-active")
+    if (playback.activeInstance === null) return
+    const seat = root.querySelector(`[data-instance="${playback.activeInstance}"]`)
+    if (!(seat instanceof HTMLElement)) return
+    seat.getBoundingClientRect()
+    seat.classList.add("is-active")
+  }
 
   function startFresh(): Run {
     clearCurrent(localStorage)
@@ -66,6 +98,10 @@ function boot(root: Element): void {
   }
 
   function paint(): void {
+    if (playback && frameHeld && root.querySelector(".stage")) {
+      patchFrame()
+      return
+    }
     root.innerHTML = renderTable(run, playback)
     const table = root.querySelector(".table")
     if (confirming && table) {
@@ -74,11 +110,8 @@ function boot(root: Element): void {
         `<div class="confirm"><p>End this run?</p><button type="button" data-action="abandon-yes">Yes</button><button type="button" data-action="abandon-no">Keep playing</button></div>`,
       )
     }
-    for (const node of root.querySelectorAll("[data-action]")) {
-      node.addEventListener("click", () => {
-        void onClick(node)
-      })
-    }
+    bind(root)
+    frameHeld = playback !== null
   }
 
   function toast(reason: RefuseReason): void {

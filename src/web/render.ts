@@ -54,11 +54,13 @@ function seat(run: Run, fighter: Fighter, index: number, side: "player" | "enemy
         </div>`
       : ""
   return `<article class="seat ${rarityClass(printed.rarity)}${activeClass}" data-seat="${fighter.card}" data-instance="${fighter.instance}">
-    ${fighterMark(fighter.card)}
-    <span class="stats"><span>${attack}</span><span class="${healthClass}">${fighter.health}</span></span>
-    ${caption}
-    <span class="skill-line">${esc(skills)}</span>
-    ${actions}
+    <div class="portrait">${fighterMark(fighter.card)}</div>
+    <div class="seat-copy">
+      <span class="stats"><span>${attack}</span><span class="${healthClass}">${fighter.health}</span></span>
+      ${caption}
+      <span class="skill-line">${esc(skills)}</span>
+      ${actions}
+    </div>
   </article>`
 }
 
@@ -78,6 +80,16 @@ function board(run: Run, side: "player" | "enemy", active: number | null): strin
     ${seats.join("")}
     ${blanks.join("")}
   </section>`
+}
+
+function skillGlyph(effect: string): string {
+  if (effect === "damage") {
+    return `<svg class="skill-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 L19 13 L29 16 L19 19 L16 29 L13 19 L3 16 L13 13 Z" fill="#D9897B" stroke="#24312C" stroke-width="1.5" stroke-linejoin="round"/></svg>`
+  }
+  if (effect === "gain-attack") {
+    return `<svg class="skill-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 L26 18 H20 V28 H12 V18 H6 Z" fill="#C4A15A" stroke="#24312C" stroke-width="1.5" stroke-linejoin="round"/></svg>`
+  }
+  return `<svg class="skill-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27 C8 20 4 16 4 11 A6 6 0 0 1 16 10 A6 6 0 0 1 28 11 C28 16 24 20 16 27 Z" fill="#D9897B" stroke="#24312C" stroke-width="1.5" stroke-linejoin="round"/></svg>`
 }
 
 function offerCard(run: Run, offer: Offer | null, slot: number): string {
@@ -100,10 +112,17 @@ function offerCard(run: Run, offer: Offer | null, slot: number): string {
           )
           .join("")
   return `<div class="offer ${rarityClass(skill.rarity)}" data-offer="${esc(offer.card)}">
+    ${skillGlyph(skill.effect)}
     <strong>${esc(skill.id)}</strong>
     <span class="skill-line">${esc(skill.trigger)} · ${esc(skill.target)} · ${esc(skill.effect)} ${skill.n}</span>
     ${run.phase === "shop" ? `<div class="actions">${targets}</div>` : ""}
   </div>`
+}
+
+function frontMark(fighters: Run["player"]): string {
+  const front = fighters[0]
+  if (!front) return `<div class="arena-empty">Open</div>`
+  return fighterMark(front.card)
 }
 
 function stage(run: Run, playback: Playback): string {
@@ -122,7 +141,11 @@ function stage(run: Run, playback: Playback): string {
       </div>
     </section>`
   }
-  return `<section class="stage"></section>`
+  return `<section class="stage arena">
+    <div class="arena-side" data-side="rival">${frontMark(run.enemy)}</div>
+    <span class="arena-gap">vs</span>
+    <div class="arena-side" data-side="player">${frontMark(run.player)}</div>
+  </section>`
 }
 
 export function renderTable(run: Run, playback: Playback): string {

@@ -125,12 +125,97 @@ body {
   color: var(--muted);
 }
 
-.rarity-uncommon { border-color: var(--uncommon); }
-.rarity-rare { border-color: var(--rare); }
+.rarity-common { border-color: var(--common); background: #f7f3ec; }
+.rarity-uncommon { border-color: var(--uncommon); background: #f2f7f4; }
+.rarity-rare { border-color: var(--rare); background: #fbf6ea; }
+.portrait { flex: 0 0 88px; display: flex; align-items: center; justify-content: center; }
+.seat-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.seat { flex-direction: row; align-items: center; }
+.offer { align-items: center; }
+
+.mark { width: 84px; height: 84px; overflow: visible; }
+.skill-mark { width: 36px; height: 36px; }
+
+.mark .body,
+.mark .ring,
+.mark .cape,
+.mark .crown,
+.mark .leg-a,
+.mark .leg-b,
+.mark .arm-a,
+.mark .arm-b {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+.mark .body { animation: idle-bob 2.2s ease-in-out infinite; }
+.mark .eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: idle-blink 4.2s infinite;
+}
+.mark .leg-a, .mark .arm-b {
+  transform-origin: center top;
+  animation: step 0.7s ease-in-out infinite;
+}
+.mark .leg-b, .mark .arm-a {
+  transform-origin: center top;
+  animation: step 0.7s ease-in-out infinite reverse;
+}
+.mark[data-card="c42"] .body { animation-duration: 1.4s; }
+.mark[data-card="c15"] .body { animation-duration: 3.2s; }
+.mark[data-card="c15"] .leg-a,
+.mark[data-card="c15"] .leg-b { animation-duration: 1.4s; }
+.mark[data-card="u44"] .ring {
+  transform-origin: center;
+  animation: idle-ring 7s linear infinite;
+}
+.mark[data-card="u35"] .cape {
+  transform-origin: 18px 24px;
+  animation: idle-cape 0.9s ease-in-out infinite;
+}
+.mark[data-card="u35"] .leg-a,
+.mark[data-card="u35"] .leg-b { animation-duration: 0.38s; }
+.mark[data-card="r55"] .crown { animation: idle-crown 2.2s ease-in-out infinite; }
 
 .seat.is-active { outline: 2px solid var(--ink); }
+.board[data-side="player"] .seat.is-active .mark .body { animation: lunge-up 180ms ease; }
+.board[data-side="rival"] .seat.is-active .mark .body { animation: lunge-down 180ms ease; }
 
-.seat svg, .offer svg { width: 48px; height: 48px; }
+@keyframes step {
+  0%, 100% { transform: rotate(-16deg); }
+  50% { transform: rotate(16deg); }
+}
+@keyframes idle-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes idle-blink {
+  0%, 46%, 54%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.12); }
+}
+@keyframes idle-ring {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes idle-cape {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(8deg); }
+}
+@keyframes idle-crown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes lunge-up {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+@keyframes lunge-down {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(8px); }
+  100% { transform: translateY(0); }
+}
 
 .stats { display: flex; gap: 8px; font-weight: 600; }
 .health-low { color: var(--heart); }
@@ -169,6 +254,29 @@ button:disabled { cursor: default; opacity: 0.5; }
   flex-direction: column;
   justify-content: center;
   gap: 8px;
+}
+
+.arena {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.arena .mark { width: 128px; height: 128px; }
+.arena-gap {
+  font-family: Fraunces, serif;
+  font-size: 28px;
+  color: var(--muted);
+}
+.arena-empty {
+  width: 128px;
+  height: 128px;
+  border: 1.5px dashed var(--line);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
 }
 
 .stage p { margin: 0; }
