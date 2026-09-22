@@ -87,3 +87,88 @@ test("a self-damage When hurt reaches the cap and still ends mutual", () => {
   expect(result.log.some((e) => e.type === "cap")).toBe(true)
   expect(result.outcome).toBe("mutual")
 })
+
+test("a start blast that removes two in front still starts the fighter behind", () => {
+  registerTestSkill({
+    id: "test-boom",
+    rarity: "common",
+    trigger: "start",
+    target: "all-friends",
+    effect: "damage",
+    n: 5,
+  })
+  registerTestSkill({
+    id: "test-start-grow",
+    rarity: "common",
+    trigger: "start",
+    target: "self",
+    effect: "gain-attack",
+    n: 1,
+  })
+  const result = resolveFight(
+    [
+      body({ instance: 1, card: "c24", health: 2 }),
+      body({ instance: 2, card: "c24", health: 2 }),
+      body({ instance: 3, card: "c15", health: 30, skills: ["test-boom", null] }),
+      body({ instance: 4, card: "c15", health: 30, skills: ["test-start-grow", null] }),
+    ],
+    [body({ instance: 5, card: "c15", health: 1 })],
+    0,
+  )
+  expect(result.player.map((fighter) => fighter.instance)).toEqual([3, 4])
+  expect(result.player[1].gainedAttack).toBe(1)
+})
+
+test("the fighter who slides behind after On attack buffs the strike", () => {
+  registerTestSkill({
+    id: "test-smite-behind",
+    rarity: "common",
+    trigger: "on-attack",
+    target: "friend-behind",
+    effect: "damage",
+    n: 5,
+  })
+  const result = resolveFight(
+    [
+      body({ instance: 1, card: "c33", health: 20, skills: ["test-smite-behind", null] }),
+      body({ instance: 2, card: "c24", health: 1 }),
+      body({ instance: 3, card: "c15", health: 10, skills: ["bark", null] }),
+    ],
+    [body({ instance: 4, card: "c15", health: 30 })],
+    0,
+  )
+  expect(result.log.filter((event) => event.type === "strike")[0]).toEqual({
+    type: "strike",
+    attacker: 1,
+    defender: 4,
+    amount: 4,
+  })
+})
+
+test("a Faint that already started still removes the fighter when the cap trips", () => {
+  registerTestSkill({
+    id: "test-open",
+    rarity: "common",
+    trigger: "on-attack",
+    target: "enemy-front",
+    effect: "damage",
+    n: 5,
+  })
+  registerTestSkill({
+    id: "test-faint-hit",
+    rarity: "common",
+    trigger: "faint",
+    target: "enemy-front",
+    effect: "damage",
+    n: 1,
+  })
+  const result = resolveFight(
+    [body({ instance: 1, card: "c15", health: 500, skills: ["test-open", "test-self-ping"] })],
+    [body({ instance: 2, card: "c24", health: 1, skills: ["test-faint-heal", "test-faint-hit"] })],
+    0,
+  )
+  expect(result.outcome).toBe("mutual")
+  expect(result.log.some((event) => event.type === "cap")).toBe(true)
+  expect(result.enemy).toEqual([])
+  expect(result.player.map((fighter) => fighter.instance)).toEqual([1])
+})

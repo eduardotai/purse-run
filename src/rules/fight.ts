@@ -32,6 +32,8 @@ export function resolveFight(
   const fainting = new Set<number>()
   let fires = 0
   let capped = false
+  let attackFrontId: number | null = null
+  let behindId: number | null = null
 
   function boardOf(side: Side): Fighter[] {
     return side === "player" ? player : enemy
@@ -148,11 +150,14 @@ export function resolveFight(
     fainting.add(instance)
     runSkills(instance, "faint")
     fainting.delete(instance)
-    if (capped) return
     const still = locate(instance)
     if (!still) return
-    boardOf(still.side).splice(still.index, 1)
+    const board = boardOf(still.side)
+    const index = still.index
+    board.splice(index, 1)
     log.push({ type: "faint", instance })
+    // Who was directly behind the attacking front at the moment that front left.
+    if (instance === attackFrontId) behindId = board[index]?.instance ?? null
   }
 
   function applyDamage(instance: number, amount: number): void {
@@ -166,29 +171,42 @@ export function resolveFight(
     if (after && after.fighter.health <= 0) faint(instance)
   }
 
-  function sweep(board: Fighter[]): void {
-    let index = 0
-    while (!capped && index < board.length) {
-      const fighter = board[index]
-      if (fighter.health > 0) {
-        index += 1
-        continue
-      }
-      const instance = fighter.instance
-      faint(instance)
-      if (capped) return
-      if (board[index]?.instance === instance) index += 1
+  function walkUnseen(board: Fighter[], visit: (fighter: Fighter) => void): void {
+    const seen = new Set<number>()
+    while (!capped) {
+      const next = board.find((fighter) => !seen.has(fighter.instance))
+      if (!next) return
+      seen.add(next.instance)
+      visit(next)
     }
   }
 
+  function sweep(board: Fighter[]): void {
+    walkUnseen(board, (fighter) => {
+      if (fighter.health <= 0) faint(fighter.instance)
+    })
+  }
+
   function runStarts(board: Fighter[]): void {
-    let index = 0
-    while (!capped && index < board.length) {
-      const instance = board[index].instance
-      runSkills(instance, "start")
-      if (capped) return
-      if (board[index]?.instance === instance) index += 1
+    walkUnseen(board, (fighter) => runSkills(fighter.instance, "start"))
+  }
+
+  function runSideAttack(frontId: number): void {
+    if (!locate(frontId)) return
+    attackFrontId = frontId
+    behindId = null
+    runSkills(frontId, "on-attack")
+    const slidBehind = behindId
+    attackFrontId = null
+    behindId = null
+    if (capped) return
+    const still = locate(frontId)
+    if (still) {
+      const behind = boardOf(still.side)[still.index + 1]
+      if (behind) runSkills(behind.instance, "friend-ahead-attacks")
+      return
     }
+    if (slidBehind !== null && locate(slidBehind)) runSkills(slidBehind, "friend-ahead-attacks")
   }
 
   runStarts(player)
@@ -203,18 +221,10 @@ export function resolveFight(
 
     const playerId = player[0].instance
     const enemyId = enemy[0].instance
-    const playerBehind = player[1]?.instance
-    const enemyBehind = enemy[1]?.instance
 
-    runSkills(playerId, "on-attack")
+    runSideAttack(playerId)
     if (capped) break
-    if (playerBehind !== undefined && locate(playerBehind)) runSkills(playerBehind, "friend-ahead-attacks")
-    if (capped) break
-    if (locate(enemyId)) {
-      runSkills(enemyId, "on-attack")
-      if (capped) break
-      if (enemyBehind !== undefined && locate(enemyBehind)) runSkills(enemyBehind, "friend-ahead-attacks")
-    }
+    runSideAttack(enemyId)
     if (capped) break
 
     const playerLoc = locate(playerId)
