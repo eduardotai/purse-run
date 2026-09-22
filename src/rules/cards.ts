@@ -1,14 +1,14 @@
-import type { EffectKind, FighterDef, FighterId, Rarity, SkillDef, SkillId, TargetKind, Trigger } from "./types"
+﻿import type { EffectKind, FighterDef, FighterId, Rarity, SkillDef, SkillId, TargetKind, Trigger } from "./types"
 
 export const FIGHTERS: readonly FighterDef[] = [
   { id: "c24", rarity: "common", attack: 2, health: 4 },
   { id: "c42", rarity: "common", attack: 4, health: 2 },
   { id: "c15", rarity: "common", attack: 1, health: 5 },
   { id: "c33", rarity: "common", attack: 3, health: 3 },
-  { id: "u44", rarity: "uncommon", attack: 4, health: 4 },
-  { id: "u35", rarity: "uncommon", attack: 3, health: 5 },
-  { id: "r55", rarity: "rare", attack: 5, health: 5 },
-  { id: "r46", rarity: "rare", attack: 4, health: 6 },
+  { id: "u44", rarity: "uncommon", attack: 3, health: 5 },
+  { id: "u35", rarity: "uncommon", attack: 5, health: 3 },
+  { id: "r55", rarity: "rare", attack: 4, health: 6 },
+  { id: "r46", rarity: "rare", attack: 3, health: 7 },
 ]
 
 export const SKILLS: readonly SkillDef[] = [
@@ -20,10 +20,10 @@ export const SKILLS: readonly SkillDef[] = [
   { id: "pin", rarity: "common", trigger: "on-attack", target: "last-living-enemy", effect: "damage", n: 1 },
   { id: "spike", rarity: "uncommon", trigger: "on-attack", target: "enemy-front", effect: "damage", n: 2 },
   { id: "mend", rarity: "uncommon", trigger: "when-hurt", target: "self", effect: "gain-health", n: 2 },
-  { id: "guard", rarity: "uncommon", trigger: "friend-ahead-attacks", target: "friend-ahead", effect: "gain-health", n: 2 },
-  { id: "hex", rarity: "uncommon", trigger: "start", target: "enemy-front", effect: "damage", n: 2 },
+  { id: "guard", rarity: "uncommon", trigger: "faint", target: "friend-behind", effect: "gain-health", n: 2 },
+  { id: "hex", rarity: "uncommon", trigger: "start", target: "self", effect: "gain-attack", n: 2 },
   { id: "lance", rarity: "rare", trigger: "on-attack", target: "last-living-enemy", effect: "damage", n: 3 },
-  { id: "banner", rarity: "rare", trigger: "start", target: "friend-ahead", effect: "gain-attack", n: 3 },
+  { id: "banner", rarity: "rare", trigger: "start", target: "self", effect: "gain-attack", n: 3 },
 ]
 
 const TRIGGERS: readonly Trigger[] = ["start", "on-attack", "when-hurt", "friend-ahead-attacks", "faint"]
