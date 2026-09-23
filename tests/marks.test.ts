@@ -9,6 +9,8 @@ test("each fighter is a faced character, not a single block", () => {
     expect(mark).toContain('class="mark"')
     expect(mark).toContain('class="body"')
     expect(mark).toContain('class="eye"')
-    expect(mark.match(/<(rect|circle|ellipse|polygon|path)\b/g)?.length ?? 0).toBeGreaterThan(3)
+    expect(mark).toContain("linearGradient")
+    const stops = mark.match(/stop-color="[^"]+"/g) ?? []
+    expect(new Set(stops).size).toBeGreaterThan(1)
   }
 })

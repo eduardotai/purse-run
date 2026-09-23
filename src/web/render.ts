@@ -1,10 +1,27 @@
 import { fighterById, skillById } from "../rules/cards"
 import { combatAttack } from "../rules/fight"
 import { seatLimit } from "../rules/run"
-import type { Fighter, Offer, Run } from "../rules/types"
+import type { Fighter, FighterId, Offer, Run } from "../rules/types"
 import { fighterMark } from "./marks"
 
-export type Playback = { lines: string[]; activeInstance: number | null } | null
+export type Playback = {
+  lines: string[]
+  activeInstance: number | null
+  clash?: string
+} | null
+
+export type ClashBeat = "you" | "foe" | "you-hit" | "foe-hit" | "you-faint" | "foe-faint" | "still"
+
+export function clashMarkup(you: FighterId | null, foe: FighterId | null, beat: ClashBeat): string {
+  const youClass = beat === "you" || beat === "you-hit" ? " charging" : beat === "foe-hit" ? " struck" : beat === "you-faint" ? " fading" : ""
+  const foeClass = beat === "foe" || beat === "foe-hit" ? " charging" : beat === "you-hit" ? " struck" : beat === "foe-faint" ? " fading" : ""
+  const spark = beat === "you-hit" || beat === "foe-hit" ? `<span class="hit-spark"></span>` : ""
+  return `<div class="clash">
+    <div class="clash-fighter foe${foeClass}">${foe ? fighterMark(foe) : ""}</div>
+    ${spark}
+    <div class="clash-fighter you${youClass}">${you ? fighterMark(you) : ""}</div>
+  </div>`
+}
 
 function esc(value: string): string {
   return value
@@ -53,7 +70,11 @@ function seat(run: Run, fighter: Fighter, index: number, side: "player" | "enemy
             .join("")}
         </div>`
       : ""
-  return `<article class="seat ${rarityClass(printed.rarity)}${activeClass}" data-seat="${fighter.card}" data-instance="${fighter.instance}">
+  const drag =
+    side === "player" && run.phase === "shop"
+      ? ` data-drag="board" data-index="${index}" data-drop="seat"`
+      : ""
+  return `<article class="seat ${rarityClass(printed.rarity)}${activeClass}" data-seat="${fighter.card}" data-instance="${fighter.instance}"${drag}>
     <div class="portrait">${fighterMark(fighter.card)}</div>
     <div class="seat-copy">
       <span class="stats"><span>${attack}</span><span class="${healthClass}">${fighter.health}</span></span>
@@ -74,7 +95,8 @@ function board(run: Run, side: "player" | "enemy", active: number | null): strin
   const blanks = Array.from({ length: Math.max(0, seatLimit(run.wins) - fighters.length) }, () => emptySeat())
   const label = side === "player" ? "You" : "Rival"
   const extra = side === "enemy" ? `<span class="rival-gold">${run.enemyGold}</span>` : ""
-  return `<section class="board" data-side="${side === "player" ? "player" : "rival"}">
+  const drop = side === "player" ? ` data-drop="board"` : ""
+  return `<section class="board" data-side="${side === "player" ? "player" : "rival"}"${drop}>
     <span class="side-label">${label}</span>
     ${extra}
     ${seats.join("")}
@@ -96,7 +118,7 @@ function offerCard(run: Run, offer: Offer | null, slot: number): string {
   if (!offer) return `<button type="button" class="offer" data-offer="empty" disabled></button>`
   if (offer.kind === "fighter") {
     const card = fighterById(offer.card)
-    return `<button type="button" class="offer ${rarityClass(card.rarity)}" data-offer="${offer.card}" data-action="buy-fighter" data-slot="${slot}">
+    return `<button type="button" class="offer ${rarityClass(card.rarity)}" data-offer="${offer.card}" data-action="buy-fighter" data-slot="${slot}" data-drag="shop-fighter">
       ${fighterMark(offer.card)}
       <span class="stats"><span>${card.attack}</span><span>${card.health}</span></span>
     </button>`
@@ -111,7 +133,7 @@ function offerCard(run: Run, offer: Offer | null, slot: number): string {
               `<button type="button" data-action="buy-skill" data-slot="${slot}" data-fighter="${index}">To ${fighter.instance}</button>`,
           )
           .join("")
-  return `<div class="offer ${rarityClass(skill.rarity)}" data-offer="${esc(offer.card)}">
+  return `<div class="offer ${rarityClass(skill.rarity)}" data-offer="${esc(offer.card)}" data-drag="shop-skill" data-slot="${slot}">
     ${skillGlyph(skill.effect)}
     <strong>${esc(skill.id)}</strong>
     <span class="skill-line">${esc(skill.trigger)} · ${esc(skill.target)} · ${esc(skill.effect)} ${skill.n}</span>
@@ -128,7 +150,7 @@ function frontMark(fighters: Run["player"]): string {
 function stage(run: Run, playback: Playback): string {
   if (playback) {
     const lines = playback.lines.map((line) => `<p>${esc(line)}</p>`).join("")
-    return `<section class="stage">${lines}<button type="button" data-action="skip">Skip</button></section>`
+    return `<section class="stage">${playback.clash ?? ""}${lines}<button type="button" data-action="skip">Skip</button></section>`
   }
   if (run.phase === "result") {
     const reason = run.endReason === "abandon" ? "You stepped away" : "Hearts ran out"
@@ -162,6 +184,7 @@ export function renderTable(run: Run, playback: Playback): string {
   return `<div class="table">
     <header class="header">
       <h1 id="title">Purse Run</h1>
+      <button type="button" data-action="go-menu">Menu</button>
       ${hearts(run.hearts)}
       <span class="purse">${run.gold}</span>
       <span class="wins" data-wins="${run.wins}">${run.wins} wins</span>
