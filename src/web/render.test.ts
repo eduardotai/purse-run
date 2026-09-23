@@ -75,7 +75,18 @@ describe("battle table", () => {
       null,
       { player: after.player, enemy: after.enemy, hearts: run.hearts, wins: run.wins },
     )
-    expect(html).toContain(`aria-label="Health ${later?.health}"`)
+    expect(html).toContain(`aria-label="Health ${Math.max(0, later?.health ?? 0)}"`)
     expect(html).toContain(`data-hearts="${run.hearts}"`)
+  })
+
+  it("prints zero when a hit would drop health below zero", () => {
+    const run = createRun("visual")
+    const enemy = run.enemy[0]
+    expect(enemy).toBeTruthy()
+    if (!enemy) return
+    enemy.health = -2
+    const html = renderTable(run, null, null)
+    expect(html).toContain('aria-label="Health 0"')
+    expect(html).not.toContain('aria-label="Health -2"')
   })
 })

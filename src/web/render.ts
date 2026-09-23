@@ -126,6 +126,7 @@ function boardCard(
 ): string {
   const printed = fighterById(fighter.card)
   const attack = combatAttack(fighter, wins, side)
+  const shownHealth = Math.max(0, fighter.health)
   const attrs = [
     `data-seat="${fighter.card}"`,
     `data-instance="${fighter.instance}"`,
@@ -150,8 +151,9 @@ function boardCard(
     art: fighterMark(fighter.card),
     title: fighter.card,
     chips: skillChips(fighter.skills),
+    cost: FIGHTER_COST,
     attack,
-    health: fighter.health,
+    health: shownHealth,
     healthClass: healthClass(fighter.health, printed.health),
     pos: posLabel(index),
   })
@@ -276,6 +278,7 @@ function lifted(run: Run, selection: Selection): string {
   if (!fighter) return ""
   const printed = fighterById(fighter.card)
   const attack = combatAttack(fighter, run.wins, "player")
+  const shownHealth = Math.max(0, fighter.health)
   const lines = fighter.skills
     .map((id) => (id ? `<p class="card-line">${esc(skillLine(skillById(id)))}</p>` : ""))
     .join("")
@@ -287,8 +290,9 @@ function lifted(run: Run, selection: Selection): string {
     art: fighterMark(fighter.card),
     title: fighter.card,
     chips: skillChips(fighter.skills),
+    cost: FIGHTER_COST,
     attack,
-    health: fighter.health,
+    health: shownHealth,
     healthClass: healthClass(fighter.health, printed.health),
     pos: posLabel(selection.index),
   })
